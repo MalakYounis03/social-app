@@ -11,14 +11,7 @@ class ChatsView extends GetView<ChatsController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.background,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          "Chats",
-          style: TextStyle(fontWeight: FontWeight.w800),
-        ),
+        title: const Text("Chats"),
         actions: [
           IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () {}),
         ],
@@ -34,13 +27,13 @@ class ChatsView extends GetView<ChatsController> {
                   vertical: 2,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.fillColor.withOpacity(0.55),
+                  color: AppColors.fillColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border.withOpacity(0.6)),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: AppColors.iconColor),
+                    Icon(Icons.search),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
@@ -57,10 +50,7 @@ class ChatsView extends GetView<ChatsController> {
                       return show
                           ? IconButton(
                               splashRadius: 18,
-                              icon: Icon(
-                                Icons.close,
-                                color: AppColors.iconColor,
-                              ),
+                              icon: Icon(Icons.close),
                               onPressed: controller.clearSearch,
                             )
                           : const SizedBox.shrink();

@@ -12,9 +12,9 @@ class ProfileHeader extends GetView<ProfileController> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.fillColor.withOpacity(0.55),
+        color: AppColors.fillColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border.withOpacity(0.6)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

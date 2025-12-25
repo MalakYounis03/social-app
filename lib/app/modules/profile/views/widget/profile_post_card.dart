@@ -19,9 +19,9 @@ class ProfilePostCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.fillColor.withOpacity(0.55),
+        color: AppColors.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border.withOpacity(0.6)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +42,7 @@ class ProfilePostCard extends StatelessWidget {
                 style: TextStyle(fontSize: 12, color: AppColors.hintText),
               ),
               const SizedBox(width: 6),
-              Icon(Icons.more_vert, color: AppColors.iconColor),
+              Icon(Icons.more_vert),
             ],
           ),
 
@@ -52,7 +52,7 @@ class ProfilePostCard extends StatelessWidget {
           Text(text, style: const TextStyle(height: 1.4, fontSize: 14)),
 
           const SizedBox(height: 10),
-          Divider(height: 1, color: AppColors.border.withOpacity(0.6)),
+          Divider(height: 1, color: AppColors.border),
           const SizedBox(height: 6),
 
           // Actions (اختياري — إذا بدك نفس الـ Home)

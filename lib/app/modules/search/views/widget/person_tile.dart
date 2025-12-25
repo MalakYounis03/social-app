@@ -10,9 +10,9 @@ class PersonTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.fillColor.withOpacity(0.55),
+        color: AppColors.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border.withOpacity(0.6)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
@@ -35,7 +35,7 @@ class PersonTile extends StatelessWidget {
             onPressed: () {},
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
-              side: BorderSide(color: AppColors.primary.withOpacity(0.6)),
+              side: BorderSide(color: AppColors.primaryBorder),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

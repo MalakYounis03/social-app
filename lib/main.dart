@@ -19,11 +19,11 @@ class MyApp extends StatelessWidget {
           scrolledUnderElevation: 0,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
+          iconTheme: IconThemeData(color: AppColors.iconColor),
           titleTextStyle: const TextStyle(
             color: Colors.white,
             fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w800,
           ),
         ),
         brightness: Brightness.dark,

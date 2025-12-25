@@ -12,7 +12,7 @@ class PostIconAction extends StatelessWidget {
       onTap: () {},
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        child: Icon(icon, size: 20, color: AppColors.iconColor),
+        child: Icon(icon, size: 20),
       ),
     );
   }

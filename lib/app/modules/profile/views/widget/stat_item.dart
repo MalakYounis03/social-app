@@ -41,9 +41,9 @@ class StatsRow extends GetView<ProfileController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.fillColor.withOpacity(0.40),
+        color: AppColors.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border.withOpacity(0.6)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Obx(
         () => StatItem(

@@ -11,9 +11,9 @@ class CreatePostCard extends GetView<HomeController> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.fillColor.withOpacity(0.55),
+        color: AppColors.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border.withOpacity(0.6)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Obx(
         () => Column(
@@ -40,7 +40,7 @@ class CreatePostCard extends GetView<HomeController> {
               ],
             ),
             const SizedBox(height: 6),
-            Divider(height: 1, color: AppColors.border.withOpacity(0.6)),
+            Divider(height: 1, color: AppColors.border),
             const SizedBox(height: 8),
 
             Align(
@@ -54,8 +54,8 @@ class CreatePostCard extends GetView<HomeController> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.primary.withOpacity(0.35),
-                  disabledForegroundColor: Colors.white.withOpacity(0.75),
+                  disabledBackgroundColor: AppColors.disabledBackgroundColor,
+                  disabledForegroundColor: AppColors.disabledForegroundColor,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

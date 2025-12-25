@@ -27,13 +27,13 @@ class SearchView extends GetView<SearchGetxController> {
                   vertical: 2,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.fillColor.withOpacity(0.55),
+                  color: AppColors.fillColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border.withOpacity(0.6)),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: AppColors.iconColor),
+                    Icon(Icons.search),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
@@ -50,10 +50,7 @@ class SearchView extends GetView<SearchGetxController> {
                       return show
                           ? IconButton(
                               splashRadius: 18,
-                              icon: Icon(
-                                Icons.close,
-                                color: AppColors.iconColor,
-                              ),
+                              icon: Icon(Icons.close),
                               onPressed: controller.clear,
                             )
                           : const SizedBox.shrink();
@@ -70,11 +67,9 @@ class SearchView extends GetView<SearchGetxController> {
                 () => Container(
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.fillColor.withOpacity(0.35),
+                    color: AppColors.fillColor,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: AppColors.border.withOpacity(0.6),
-                    ),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     children: [

@@ -21,7 +21,6 @@ class CustomTextFiled extends StatelessWidget {
             hintText: hintText,
             hintStyle: TextStyle(color: AppColors.hintText),
             icon: Icon(icon),
-            iconColor: AppColors.iconColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: AppColors.border),
@@ -31,7 +30,7 @@ class CustomTextFiled extends StatelessWidget {
               borderSide: BorderSide(color: AppColors.primary),
             ),
             filled: true,
-            fillColor: AppColors.fillColor,
+            fillColor: Colors.grey.shade900,
           ),
         ),
       ),
