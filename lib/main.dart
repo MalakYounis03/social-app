@@ -32,7 +32,6 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Inter',
       ),
       getPages: AppPages.routes,
-
       initialRoute: AppPages.initialRoute,
       debugShowCheckedModeBanner: false,
     );
