@@ -20,19 +20,30 @@ class HomeView extends GetView<HomeController> {
         ],
       ),
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.delayed(const Duration(seconds: 1));
-          },
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            itemCount: 1 + 20,
-            separatorBuilder: (context, index) => const SizedBox(height: 14),
-            itemBuilder: (context, i) {
-              if (i == 0) return const CreatePostCard();
-              return PostCard(index: i - 1);
-            },
-          ),
+        child: Obx(
+          () => controller.isLoading.value
+              ? Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: controller.fetchPosts,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    physics: const AlwaysScrollableScrollPhysics(),
+
+                    itemCount: controller.posts.length + 2,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 14),
+                    itemBuilder: (context, index) {
+                      if (index == 0) return CreatePostCard();
+                      if (index == 1) return const SizedBox(height: 14);
+
+                      final postIndex = index - 2;
+                      return PostCard(post: controller.posts[postIndex]);
+                    },
+                  ),
+                ),
         ),
       ),
     );

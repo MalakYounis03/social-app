@@ -19,34 +19,44 @@ class LoginView extends GetView<LoginController> {
               vertical: 16.0,
             ),
             child: Center(
-              child: Column(
-                children: [
-                  Image.asset("assets/images/chats.png", width: 200),
-                  SizedBox(height: 50),
-                  CustomTextFiled(
-                    hintText: "Email",
-                    icon: Icons.email_outlined,
-                  ),
-                  SizedBox(height: 20),
-                  CustomTextFiled(
-                    hintText: "Password",
-                    icon: Icons.lock_outline,
-                  ),
-                  SizedBox(height: 40),
-                  CustomElevatedButton(text: "Login", onPressed: () {}),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Text("Don't have an account?"),
-                      TextButton(
-                        onPressed: () {
-                          Get.toNamed('/register');
-                        },
-                        child: Text("Register"),
-                      ),
-                    ],
-                  ),
-                ],
+              child: Form(
+                key: controller.loginFormKey,
+                child: Column(
+                  children: [
+                    Image.asset("assets/images/chats.png", width: 200),
+                    SizedBox(height: 50),
+                    CustomTextFiled(
+                      textEditingController: controller.emailController,
+                      hintText: "Email",
+                      icon: Icons.email_outlined,
+                    ),
+                    SizedBox(height: 20),
+                    CustomTextFiled(
+                      textEditingController: controller.passwordController,
+                      hintText: "Password",
+                      icon: Icons.lock_outline,
+                    ),
+                    SizedBox(height: 40),
+                    CustomElevatedButton(
+                      text: "Login",
+                      onPressed: () {
+                        controller.login(context);
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text("Don't have an account?"),
+                        TextButton(
+                          onPressed: () {
+                            Get.toNamed('/register');
+                          },
+                          child: Text("Register"),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

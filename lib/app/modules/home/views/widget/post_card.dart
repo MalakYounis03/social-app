@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:social_app/app/constants/app_colors.dart';
+import 'package:social_app/app/data/posts_model.dart';
+import 'package:social_app/app/modules/home/controllers/home_controller.dart';
 import 'package:social_app/app/modules/home/views/widget/post_icon_action.dart';
 
-class PostCard extends StatelessWidget {
-  final int index;
-  const PostCard({super.key, required this.index});
+class PostCard extends GetView<HomeController> {
+  final PostModel post;
+  const PostCard({super.key, required this.post});
 
   @override
   Widget build(BuildContext context) {
@@ -20,34 +23,40 @@ class PostCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 20,
-                backgroundImage: AssetImage('assets/images/chats.png'),
-                backgroundColor: Colors.transparent,
+                backgroundImage: NetworkImage(post.user.imageUrl),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  "User $index",
+                  post.user.name,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
               Text(
-                "2:30 PM",
+                '${post.createdAt.day}/${post.createdAt.month}/${post.createdAt.year}',
                 style: TextStyle(fontSize: 12, color: AppColors.hintText),
               ),
               const SizedBox(width: 6),
-              Icon(Icons.more_vert),
+              if (controller.isMyPost(post))
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (value) {
+                    if (value == 'delete') {
+                      controller.deletePost(post.id);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  ],
+                ),
             ],
           ),
 
           const SizedBox(height: 10),
 
-          Text(
-            "Hello! This is a post from user $index. 🔥\n"
-            "هنا نص منشور بسيط لعرض الستايل.",
-            style: const TextStyle(height: 1.4, fontSize: 14),
-          ),
+          Text(post.content, style: const TextStyle(height: 1.4, fontSize: 14)),
 
           const SizedBox(height: 10),
           Divider(height: 1, color: AppColors.border),

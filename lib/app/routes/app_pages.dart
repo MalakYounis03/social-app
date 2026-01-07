@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:social_app/app/services/auth_services.dart';
 
 import '../modules/add_post/bindings/add_post_binding.dart';
 import '../modules/add_post/views/add_post_view.dart';
@@ -73,5 +74,8 @@ class AppPages {
       binding: MainBinding(),
     ),
   ];
-  static String get initialRoute => Routes.LOGIN;
+  static String get initialRoute {
+    final authService = Get.find<AuthServices>();
+    return authService.isLoggedIn.value ? Routes.MAIN : Routes.LOGIN;
+  }
 }

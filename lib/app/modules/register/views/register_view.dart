@@ -19,46 +19,62 @@ class RegisterView extends GetView<RegisterController> {
               vertical: 16.0,
             ),
             child: Center(
-              child: Column(
-                children: [
-                  Image.asset(
-                    "assets/images/chats.png",
-                    width: 200,
-                    fit: BoxFit.contain,
-                  ),
-                  SizedBox(height: 50),
-                  CustomTextFiled(hintText: "Name", icon: Icons.person_outline),
-                  SizedBox(height: 20),
+              child: Form(
+                key: controller.registerFormKey,
+                child: Column(
+                  children: [
+                    Image.asset(
+                      "assets/images/chats.png",
+                      width: 200,
+                      fit: BoxFit.contain,
+                    ),
+                    SizedBox(height: 50),
+                    CustomTextFiled(
+                      textEditingController: controller.nameController,
+                      hintText: "Name",
+                      icon: Icons.person_outline,
+                    ),
+                    SizedBox(height: 20),
 
-                  CustomTextFiled(
-                    hintText: "Email",
-                    icon: Icons.email_outlined,
-                  ),
-                  SizedBox(height: 20),
-                  CustomTextFiled(
-                    hintText: "Password",
-                    icon: Icons.lock_outline,
-                  ),
-                  SizedBox(height: 20),
-                  CustomTextFiled(
-                    hintText: "Confirm Password",
-                    icon: Icons.lock_outline,
-                  ),
-                  SizedBox(height: 40),
-                  CustomElevatedButton(text: "Register", onPressed: () {}),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Text("Already have an account?"),
-                      TextButton(
-                        onPressed: () {
-                          Get.back();
-                        },
-                        child: Text("Login"),
-                      ),
-                    ],
-                  ),
-                ],
+                    CustomTextFiled(
+                      textEditingController: controller.emailController,
+                      hintText: "Email",
+                      icon: Icons.email_outlined,
+                    ),
+                    SizedBox(height: 20),
+                    CustomTextFiled(
+                      textEditingController: controller.passwordController,
+                      hintText: "Password",
+                      icon: Icons.lock_outline,
+                    ),
+                    SizedBox(height: 20),
+                    CustomTextFiled(
+                      textEditingController:
+                          controller.confirmPasswordController,
+                      hintText: "Confirm Password",
+                      icon: Icons.lock_outline,
+                    ),
+                    SizedBox(height: 40),
+                    CustomElevatedButton(
+                      text: "Register",
+                      onPressed: () {
+                        controller.register(context);
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text("Already have an account?"),
+                        TextButton(
+                          onPressed: () {
+                            Get.back();
+                          },
+                          child: Text("Login"),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

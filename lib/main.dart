@@ -1,9 +1,27 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:social_app/app/constants/app_colors.dart';
+import 'package:social_app/app/data/user_model.dart';
 import 'package:social_app/app/routes/app_pages.dart';
+import 'package:social_app/app/services/api_services.dart';
+import 'package:social_app/app/services/auth_services.dart';
+import 'package:social_app/firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  Hive.registerAdapter(UserModelAdapter());
+
+  await Hive.openBox('auth');
+
+  Get.put(AuthServices());
+  Get.put(ApiServices());
+
   runApp(const MyApp());
 }
 

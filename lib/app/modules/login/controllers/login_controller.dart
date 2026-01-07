@@ -1,23 +1,38 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:social_app/app/constants/end_points.dart';
+import 'package:social_app/app/modules/login/model/login_model.dart';
+import 'package:social_app/app/routes/app_pages.dart';
+import 'package:social_app/app/services/api_services.dart';
+import 'package:social_app/app/services/auth_services.dart';
 
-class LoginController extends GetxController {
-  //TODO: Implement LoginController
+class LoginController extends GetxController with StateMixin<void> {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
+  var isLoading = false.obs;
+  final authService = Get.find<AuthServices>();
+  final apiService = Get.find<ApiServices>();
 
-  final count = 0.obs;
-  @override
-  void onInit() {
-    super.onInit();
+  Future<void> login(BuildContext context) async {
+    if (!loginFormKey.currentState!.validate()) return;
+
+    try {
+      final response = await apiService.post(
+        endPoint: EndPoints.login,
+        body: {
+          'email': emailController.text,
+          'password': passwordController.text,
+        },
+        fromJson: LoginModel.fromJson,
+      );
+
+      await authService.saveLoginData(response.token, response.user);
+      Get.offAllNamed(Routes.MAIN);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
-
-  @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  void increment() => count.value++;
 }

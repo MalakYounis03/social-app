@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:social_app/app/constants/app_colors.dart';
 
 class PostIconAction extends StatelessWidget {
   final IconData icon;
