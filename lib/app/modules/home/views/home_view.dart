@@ -21,7 +21,7 @@ class HomeView extends GetView<HomeController> {
       ),
       body: SafeArea(
         child: Obx(
-          () => controller.isLoading.value
+          () => (controller.isLoading.value && controller.posts.isEmpty)
               ? Center(child: CircularProgressIndicator())
               : RefreshIndicator(
                   onRefresh: controller.fetchPosts,

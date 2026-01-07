@@ -18,6 +18,7 @@ class LoginController extends GetxController with StateMixin<void> {
     if (!loginFormKey.currentState!.validate()) return;
 
     try {
+      isLoading.value = true;
       final response = await apiService.post(
         endPoint: EndPoints.login,
         body: {
@@ -28,8 +29,10 @@ class LoginController extends GetxController with StateMixin<void> {
       );
 
       await authService.saveLoginData(response.token, response.user);
+      isLoading.value = false;
       Get.offAllNamed(Routes.MAIN);
     } catch (e) {
+      isLoading.value = false;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));

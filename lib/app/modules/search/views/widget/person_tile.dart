@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:social_app/app/constants/app_colors.dart';
+import 'package:social_app/app/data/user_model.dart';
 
 class PersonTile extends StatelessWidget {
-  final String name;
-  const PersonTile({super.key, required this.name});
+  final UserModel user;
+  const PersonTile({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +23,13 @@ class PersonTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(
+                  user.name,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 2),
                 Text(
-                  "@${name.toLowerCase().replaceAll(' ', '')}",
+                  "@${user.name.toLowerCase().replaceAll(' ', '')}",
                   style: TextStyle(color: AppColors.hintText, fontSize: 12),
                 ),
               ],

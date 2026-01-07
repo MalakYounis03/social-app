@@ -37,12 +37,18 @@ class LoginView extends GetView<LoginController> {
                       icon: Icons.lock_outline,
                     ),
                     SizedBox(height: 40),
-                    CustomElevatedButton(
-                      text: "Login",
-                      onPressed: () {
-                        controller.login(context);
-                      },
-                    ),
+                    Obx(() {
+                      if (controller.isLoading.value) {
+                        return CircularProgressIndicator();
+                      } else {
+                        return CustomElevatedButton(
+                          text: "Login",
+                          onPressed: () {
+                            controller.login(context);
+                          },
+                        );
+                      }
+                    }),
                     SizedBox(height: 10),
                     Row(
                       children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_app/app/constants/app_colors.dart';
+import 'package:social_app/app/constants/formate_post_time.dart';
 import 'package:social_app/app/data/posts_model.dart';
 import 'package:social_app/app/modules/home/controllers/home_controller.dart';
 import 'package:social_app/app/modules/home/views/widget/post_icon_action.dart';
@@ -35,22 +36,22 @@ class PostCard extends GetView<HomeController> {
                 ),
               ),
               Text(
-                '${post.createdAt.day}/${post.createdAt.month}/${post.createdAt.year}',
+                formatPostTime(post.createdAt),
                 style: TextStyle(fontSize: 12, color: AppColors.hintText),
               ),
               const SizedBox(width: 6),
-              if (controller.isMyPost(post))
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (value) {
-                    if (value == 'delete') {
-                      controller.deletePost(post.id);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
-                  ],
-                ),
+              // if (controller.isMyPost(post))
+              //   PopupMenuButton<String>(
+              //     icon: const Icon(Icons.more_vert),
+              //     onSelected: (value) {
+              //       if (value == 'delete') {
+              //         controller.deletePost(post.id);
+              //       }
+              //     },
+              //     itemBuilder: (context) => [
+              //       const PopupMenuItem(value: 'delete', child: Text('Delete')),
+              //     ],
+              //   ),
             ],
           ),
 

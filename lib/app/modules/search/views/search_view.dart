@@ -113,7 +113,7 @@ class SearchView extends GetView<SearchGetxController> {
                     itemCount: items.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 10),
-                    itemBuilder: (_, i) => PersonTile(name: items[i]),
+                    itemBuilder: (_, i) => PersonTile(user: items[i]),
                   );
                 } else {
                   final items = controller.filteredPosts;

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:social_app/app/modules/home/controllers/home_controller.dart';
 import 'package:social_app/app/modules/profile/views/widget/post_list.dart';
 import 'package:social_app/app/modules/profile/views/widget/profile_header.dart';
-import '../controllers/profile_controller.dart';
 
-class ProfileView extends GetView<ProfileController> {
+class ProfileView extends GetView<HomeController> {
   const ProfileView({super.key});
 
   @override
@@ -12,9 +12,12 @@ class ProfileView extends GetView<ProfileController> {
     return Scaffold(
       appBar: AppBar(title: const Text("Profile")),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-          children: const [ProfileHeader(), SizedBox(height: 14), PostsList()],
+        child: RefreshIndicator(
+          onRefresh: controller.fetchPosts,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            children: [ProfileHeader(), SizedBox(height: 14), PostsList()],
+          ),
         ),
       ),
     );

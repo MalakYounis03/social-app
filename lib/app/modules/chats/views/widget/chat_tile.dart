@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:social_app/app/constants/app_colors.dart';
 import 'package:social_app/app/modules/chats/controllers/chats_controller.dart';
+import 'package:social_app/app/routes/app_pages.dart';
 
 class ChatTile extends StatelessWidget {
   final ChatItem item;
@@ -11,8 +13,7 @@ class ChatTile extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: () {
-        // افتح صفحة المحادثة
-        // Get.toNamed(Routes.CHAT, arguments: item);
+        Get.toNamed(Routes.CHAT_DETAILS, arguments: item);
       },
       child: Container(
         padding: const EdgeInsets.all(12),

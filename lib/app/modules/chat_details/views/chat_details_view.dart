@@ -9,10 +9,7 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ChatDetailsView'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('ChatDetails'), centerTitle: true),
       body: const Center(
         child: Text(
           'ChatDetailsView is working',

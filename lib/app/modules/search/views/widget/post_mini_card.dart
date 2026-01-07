@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:social_app/app/constants/app_colors.dart';
+import 'package:social_app/app/data/posts_model.dart';
 
 class PostMiniCard extends StatelessWidget {
-  final String text;
+  final PostModel text;
   const PostMiniCard({super.key, required this.text});
 
   @override
@@ -24,21 +25,21 @@ class PostMiniCard extends StatelessWidget {
               children: [
                 const CircleAvatar(radius: 18),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    "User",
+                    text.user.name,
                     style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ),
                 Text(
-                  "1h",
+                  text.createdAt.day.toString(),
                   style: TextStyle(color: AppColors.hintText, fontSize: 12),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              text,
+              text.content,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(height: 1.35),
