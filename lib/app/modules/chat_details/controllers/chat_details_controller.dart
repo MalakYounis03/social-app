@@ -1,81 +1,260 @@
+import 'dart:async';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:get/get.dart';
-
 import 'package:flutter/material.dart';
-import 'package:social_app/app/modules/chats/controllers/chats_controller.dart';
+import 'package:social_app/app/modules/chat_details/model/chat_details_model.dart';
+import 'package:social_app/app/services/auth_services.dart';
 
 class ChatDetailsController extends GetxController {
-  late final ChatItem chat;
-
+  final db = FirebaseDatabase.instance.ref();
+  final authService = Get.find<AuthServices>();
   final textController = TextEditingController();
-  final scrollController = ScrollController();
+  StreamSubscription<DatabaseEvent>? _messagesSubscription;
+  StreamSubscription<DatabaseEvent>? _childRemovedSub;
+  late final user = authService.user.value!;
+  late final String chatId;
 
+  final ChatDetails chat = Get.arguments['chat'];
   final messages = <ChatMessage>[].obs;
+  final isLoading = false.obs;
+
+  final scrollController = ScrollController();
+  //Pagination
+  static const int pageSize = 15;
+  int? _oldestMessageTime;
+  final isFeatchingMore = false.obs;
+  final hasMore = true.obs;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
+    chatId = buildChatId(user.id, chat.otherUserId);
 
-    chat = Get.arguments as ChatItem;
+    //Panigation
+    scrollController.addListener(() {
+      if (!hasMore.value || isFeatchingMore.value) return;
+      if (!scrollController.hasClients) return;
+      final pos = scrollController.position;
 
-    // Dummy messages (بدّلهم لاحقًا بـ Firebase)
-    messages.addAll([
-      ChatMessage(text: "هلا كيفك؟", isMe: false, time: "2:18 PM"),
-      ChatMessage(text: "تمام الحمدلله، انت؟", isMe: true, time: "2:19 PM"),
-      ChatMessage(text: "ابعثلي الملف لو سمحت", isMe: false, time: "2:20 PM"),
-      ChatMessage(text: "تم ✅", isMe: true, time: "2:20 PM"),
-      ChatMessage(text: "هلا كيفك؟", isMe: false, time: "2:18 PM"),
-      ChatMessage(text: "تمام الحمدلله، انت؟", isMe: true, time: "2:19 PM"),
-      ChatMessage(text: "ابعثلي الملف لو سمحت", isMe: false, time: "2:20 PM"),
-      ChatMessage(text: "تم ✅", isMe: true, time: "2:20 PM"),
-      ChatMessage(text: "هلا كيفك؟", isMe: false, time: "2:18 PM"),
-      ChatMessage(text: "تمام الحمدلله، انت؟", isMe: true, time: "2:19 PM"),
-      ChatMessage(text: "ابعثلي الملف لو سمحت", isMe: false, time: "2:20 PM"),
-      ChatMessage(text: "تم ✅", isMe: true, time: "2:20 PM"),
-      ChatMessage(text: "هلا كيفك؟", isMe: false, time: "2:18 PM"),
-      ChatMessage(text: "تمام الحمدلله، انت؟", isMe: true, time: "2:19 PM"),
-      ChatMessage(text: "ابعثلي الملف لو سمحت", isMe: false, time: "2:20 PM"),
-      ChatMessage(text: "تم ✅", isMe: true, time: "2:20 PM"),
-    ]);
+      if (pos.pixels >= pos.maxScrollExtent - 80) {
+        fetchMoreMessages();
+      }
+    });
+    await _fetchMessages();
+
+    _listenToNewMessages();
+  }
+
+  Future<void> _fetchMessages() async {
+    isLoading.value = true;
+
+    try {
+      final event = await db
+          .child("chat-details/$chatId/messages")
+          .orderByChild("messageTime")
+          .limitToLast(pageSize)
+          .once(DatabaseEventType.value);
+
+      final childs =
+          event.snapshot.children
+              .map(
+                (e) => ChatMessage.fromMap(
+                  e.key!,
+                  e.value as Map<dynamic, dynamic>,
+                ),
+              )
+              .toList()
+            ..sort((a, b) => a.messageTime.compareTo(b.messageTime));
+
+      messages.assignAll(childs);
+
+      if (childs.isNotEmpty) _oldestMessageTime = childs.first.messageTime;
+      hasMore.value = childs.length == pageSize;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchMoreMessages() async {
+    if (!hasMore.value) return;
+
+    if (isFeatchingMore.value) return;
+
+    final oldestTime = _oldestMessageTime;
+    if (oldestTime == null) {
+      return;
+    }
+
+    isFeatchingMore.value = true;
+
+    try {
+      final event = await db
+          .child("chat-details/$chatId/messages")
+          .orderByChild("messageTime")
+          .endAt(oldestTime - 1)
+          .limitToLast(pageSize)
+          .once(DatabaseEventType.value);
+
+      if (!event.snapshot.exists) {
+        hasMore.value = false;
+        return;
+      }
+
+      final older =
+          event.snapshot.children
+              .map(
+                (e) => ChatMessage.fromMap(
+                  e.key!,
+                  e.value as Map<dynamic, dynamic>,
+                ),
+              )
+              .toList()
+            ..sort((a, b) => a.messageTime.compareTo(b.messageTime));
+
+      if (older.isEmpty) {
+        hasMore.value = false;
+        return;
+      }
+      final existingIds = messages.map((m) => m.id).toSet();
+      final toInsert = older.where((m) => !existingIds.contains(m.id)).toList();
+
+      if (toInsert.isNotEmpty) {
+        messages.insertAll(0, toInsert);
+        _oldestMessageTime = messages.first.messageTime;
+      }
+      hasMore.value = older.length == pageSize;
+    } finally {
+      isFeatchingMore.value = false;
+    }
+  }
+
+  void _listenToNewMessages() {
+    final baseQuery = db
+        .child("chat-details/$chatId/messages")
+        .orderByChild("messageTime");
+
+    final lastTime = messages.isEmpty ? 0 : messages.last.messageTime;
+
+    _messagesSubscription = baseQuery.startAt(lastTime + 1).onChildAdded.listen(
+      (event) {
+        final data = event.snapshot.value;
+        if (data == null) return;
+
+        final msgData = Map<dynamic, dynamic>.from(data as Map);
+        final newMessage = ChatMessage.fromMap(
+          event.snapshot.key ?? '',
+          msgData,
+        );
+
+        final exists = messages.any((m) => m.id == newMessage.id);
+
+        if (exists) return;
+        messages.add(newMessage);
+      },
+    );
+    _childRemovedSub = baseQuery.onChildRemoved.listen((event) {
+      final id = event.snapshot.key;
+      if (id == null) return;
+      messages.removeWhere((m) => m.id == id);
+    });
+  }
+
+  Future<void> sendMessages() async {
+    final text = textController.text.trim();
+    if (text.isEmpty) return;
+    final newMessageRef = db.child("chat-details/$chatId/messages").push();
+    final newMessageTime = DateTime.now().millisecondsSinceEpoch;
+
+    textController.clear();
+    final tempId = newMessageRef.key ?? '';
+    messages.add(
+      ChatMessage(
+        id: tempId,
+        message: text,
+        messageTime: newMessageTime,
+        senderId: user.id,
+      ),
+    );
+
+    await newMessageRef.set({
+      "message": text,
+      "messageTime": newMessageTime,
+      "senderId": user.id,
+    });
+
+    await db.child("list-of-chats/${user.id}/${chat.otherUserId}").update({
+      "name": chat.otherUserName,
+      "imageUrl": chat.otherUserImageUrl,
+      "lastMessage": text,
+      "lastMessageTime": newMessageTime,
+      "lastMessageAuthor": user.id,
+    });
+
+    await db.child("list-of-chats/${chat.otherUserId}/${user.id}").update({
+      "name": user.name,
+      "imageUrl": user.imageUrl,
+      "lastMessage": text,
+      "lastMessageTime": newMessageTime,
+      "lastMessageAuthor": user.id,
+    });
+  }
+
+  String buildChatId(String id1, String id2) {
+    final ids = [id1, id2];
+    ids.sort();
+    final reversed = ids.reversed.toList();
+    return reversed.join('____');
+  }
+
+  Future<void> deleteMessageForEveryone(ChatMessage msg) async {
+    final messageRef = db.child("chat-details/$chatId/messages/${msg.id}");
+    messages.removeWhere((m) => m.id == msg.id);
+
+    await messageRef.remove();
+    await _updateLastMessageAfterDelete(msg);
+  }
+
+  Future<void> _updateLastMessageAfterDelete(ChatMessage deletedMsg) async {
+    final myId = user.id;
+    final otherId = chat.otherUserId;
+
+    final myChatRef = db.child("list-of-chats/$myId/$otherId");
+    final otherChatRef = db.child("list-of-chats/$otherId/$myId");
+
+    final messagesRef = db.child("chat-details/$chatId/messages");
+
+    final lastMsgEvent = await messagesRef
+        .orderByChild('messageTime')
+        .limitToLast(1)
+        .once(DatabaseEventType.value);
+
+    if (!lastMsgEvent.snapshot.exists) {
+      await myChatRef.remove();
+      await otherChatRef.remove();
+      return;
+    }
+    final lastSnap = lastMsgEvent.snapshot;
+
+    final DataSnapshot msgSnap = lastSnap.children.first;
+
+    final lastMsgData = msgSnap.value as Map<dynamic, dynamic>;
+
+    final updateData = {
+      'lastMessage': lastMsgData['message'] ?? '',
+      'lastMessageAuthor': lastMsgData['senderId'] ?? '',
+      'lastMessageTime': lastMsgData['messageTime'] ?? 0,
+    };
+
+    await myChatRef.update(updateData);
+    await otherChatRef.update(updateData);
   }
 
   @override
   void onClose() {
     textController.dispose();
     scrollController.dispose();
+    _messagesSubscription?.cancel();
+    _childRemovedSub?.cancel();
     super.onClose();
   }
-
-  void send() {
-    final txt = textController.text.trim();
-    if (txt.isEmpty) return;
-
-    messages.add(ChatMessage(text: txt, isMe: true, time: _nowLabel()));
-    textController.clear();
-
-    // Scroll لآخر الرسائل
-    Future.delayed(const Duration(milliseconds: 50), () {
-      if (!scrollController.hasClients) return;
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    });
-  }
-
-  String _nowLabel() {
-    final now = TimeOfDay.now();
-    final h = now.hourOfPeriod == 0 ? 12 : now.hourOfPeriod;
-    final m = now.minute.toString().padLeft(2, '0');
-    final p = now.period == DayPeriod.am ? "AM" : "PM";
-    return "$h:$m $p";
-  }
-}
-
-class ChatMessage {
-  final String text;
-  final bool isMe;
-  final String time;
-
-  ChatMessage({required this.text, required this.isMe, required this.time});
 }

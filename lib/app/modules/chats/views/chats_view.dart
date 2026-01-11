@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_app/app/constants/app_colors.dart';
+import 'package:social_app/app/modules/chat_details/model/chat_details_model.dart';
 import 'package:social_app/app/modules/chats/views/widget/chat_tile.dart';
+import 'package:social_app/app/routes/app_pages.dart';
 import '../controllers/chats_controller.dart';
 
 class ChatsView extends GetView<ChatsController> {
@@ -10,12 +12,7 @@ class ChatsView extends GetView<ChatsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Chats"),
-        actions: [
-          IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () {}),
-        ],
-      ),
+      appBar: AppBar(title: const Text("Chats")),
       body: SafeArea(
         child: Column(
           children: [
@@ -59,7 +56,46 @@ class ChatsView extends GetView<ChatsController> {
                 ),
               ),
             ),
+            Obx(
+              () => SizedBox(
+                height: 80,
+                width: double.infinity,
 
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.only(left: 20),
+                  itemBuilder: (context, index) {
+                    final users = controller.peopleExceptMe[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Get.toNamed(
+                          Routes.CHAT_DETAILS,
+                          arguments: {'chat': ChatDetails.newChat(users)},
+                        );
+                      },
+                      child: SizedBox(
+                        width: 60,
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundImage: NetworkImage(users.imageUrl),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              users.name,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  separatorBuilder: (context, index) => SizedBox(width: 12),
+                  itemCount: controller.peopleExceptMe.length,
+                ),
+              ),
+            ),
             // List
             Expanded(
               child: Obx(() {

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:social_app/app/constants/app_colors.dart';
-import 'package:social_app/app/modules/chats/controllers/chats_controller.dart';
+import 'package:social_app/app/constants/formate_post_time.dart';
+import 'package:social_app/app/modules/chat_details/model/chat_details_model.dart';
+import 'package:social_app/app/modules/chat_details/model/chat_model.dart';
 import 'package:social_app/app/routes/app_pages.dart';
 
 class ChatTile extends StatelessWidget {
-  final ChatItem item;
+  final Chat item;
   const ChatTile({super.key, required this.item});
 
   @override
@@ -13,7 +15,10 @@ class ChatTile extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: () {
-        Get.toNamed(Routes.CHAT_DETAILS, arguments: item);
+        Get.toNamed(
+          Routes.CHAT_DETAILS,
+          arguments: {'chat': ChatDetails.existChat(item)},
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -28,7 +33,7 @@ class ChatTile extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundImage: AssetImage(item.photo),
+                  backgroundImage: NetworkImage(item.imageUrl),
                 ),
               ],
             ),
@@ -43,11 +48,18 @@ class ChatTile extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    item.lastMessage,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: AppColors.iconColor),
+
+                  Row(
+                    children: [
+                      Text(lastMessageAuthor() + ": "),
+                      Text(
+                        item.lastMessage,
+
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: AppColors.iconColor),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -59,7 +71,9 @@ class ChatTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  item.time,
+                  formatPostTime(
+                    DateTime.fromMillisecondsSinceEpoch(item.lastMessageTime),
+                  ),
                   style: TextStyle(color: AppColors.hintText, fontSize: 12),
                 ),
                 const SizedBox(height: 8),
@@ -69,5 +83,13 @@ class ChatTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  lastMessageAuthor() {
+    if (item.lastMessageAuthor == item.otherUserId) {
+      return item.name;
+    } else {
+      return "You";
+    }
   }
 }
