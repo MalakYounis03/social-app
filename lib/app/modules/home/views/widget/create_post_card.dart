@@ -55,30 +55,40 @@ class CreatePostCard extends GetView<HomeController> {
           Divider(height: 1, color: AppColors.border),
           const SizedBox(height: 8),
 
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                await controller.addPost();
-              },
-              icon: const Icon(Icons.send, size: 18),
-              label: const Text("Post"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: AppColors.disabledBackgroundColor,
-                disabledForegroundColor: AppColors.disabledForegroundColor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
+          Obx(() {
+            final isDisabled =
+                !controller.canPost.value || controller.isPosting.value;
+
+            return Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                onPressed: isDisabled
+                    ? null
+                    : () async {
+                        await controller.addPost();
+                      },
+                icon: controller.isPosting.value
+                    ? null
+                    : Icon(Icons.send, size: 18),
+                label: Text(controller.isPosting.value ? 'Posting...' : 'Post'),
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.disabledBackgroundColor,
+                  disabledForegroundColor: AppColors.disabledForegroundColor,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );

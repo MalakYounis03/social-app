@@ -11,6 +11,7 @@ import 'package:social_app/app/services/auth_services.dart';
 class HomeController extends GetxController {
   final textController = TextEditingController();
   RxBool canPost = false.obs;
+  RxBool isPosting = false.obs;
   RxBool isLoading = false.obs;
   RxList<PostModel> posts = <PostModel>[].obs;
   final apiServices = Get.find<ApiServices>();
@@ -51,13 +52,13 @@ class HomeController extends GetxController {
   }
 
   Future<void> addPost() async {
+    if (isPosting.value) return;
     final content = textController.text.trim();
 
-    if (content.isEmpty) {
-      Get.snackbar('Error', 'Post content cannot be empty');
-      return;
-    }
+    if (!(formKey.currentState?.validate() ?? false)) return;
+
     try {
+      isPosting.value = true;
       final response = await apiServices.post(
         endPoint: EndPoints.addPost,
         body: {'content': content},
@@ -74,6 +75,8 @@ class HomeController extends GetxController {
       Get.snackbar('Success', 'Post added successfully');
     } catch (e) {
       Get.snackbar('Error', 'Failed to add post: $e');
+    } finally {
+      isPosting.value = false;
     }
   }
 
