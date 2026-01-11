@@ -20,6 +20,6 @@ enum EndPoints {
   }
 
   Uri get url {
-    return Uri.parse('${BaseUrl.baseUrl}/$path');
+    return Uri.parse('${BaseUrl().baseUrl}/$path');
   }
 }

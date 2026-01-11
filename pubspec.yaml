@@ -29,11 +29,11 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   cupertino_icons: ^1.0.8
-  emoji_picker_flutter: ^4.4.0
   firebase_core: ^4.3.0
   firebase_database: ^12.1.1
   flutter:
     sdk: flutter
+  flutter_dotenv: ^6.0.0
   flutter_svg: ^2.2.3
   get: ^4.7.3
   get_cli: ^1.9.1
