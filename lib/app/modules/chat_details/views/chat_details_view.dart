@@ -1,3 +1,4 @@
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +14,8 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
     final chat = controller.chat;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+
       appBar: AppBar(
         titleSpacing: 0,
         title: Row(
@@ -58,8 +61,9 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
                   itemBuilder: (_, i) {
                     if (i == items.length) {
                       return Obx(() {
-                        if (!controller.hasMore.value)
+                        if (!controller.hasMore.value) {
                           return const SizedBox.shrink();
+                        }
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -100,6 +104,7 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
                           Expanded(
                             child: TextField(
                               controller: controller.textController,
+                              focusNode: controller.focusNode,
                               minLines: 1,
                               maxLines: 5,
                               decoration: InputDecoration(
@@ -111,7 +116,19 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
                           ),
                           IconButton(
                             splashRadius: 18,
-                            onPressed: () {},
+                            onPressed: () {
+                              if (controller.isEmojiVisible.value) {
+                                // رجّع الكيبورد
+                                controller.isEmojiVisible.value = false;
+                                FocusScope.of(
+                                  context,
+                                ).requestFocus(controller.focusNode);
+                              } else {
+                                // افتح الإيموجي
+                                controller.focusNode.unfocus();
+                                controller.isEmojiVisible.value = true;
+                              }
+                            },
                             icon: Icon(
                               Icons.emoji_emotions_outlined,
                               color: AppColors.iconColor,
@@ -139,6 +156,63 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            Obx(
+              () => Offstage(
+                offstage: !controller.isEmojiVisible.value,
+                child: SizedBox(
+                  height: 260,
+                  child: EmojiPicker(
+                    onEmojiSelected: (category, emoji) {
+                      final controllerText = controller.textController;
+
+                      final text = controllerText.text;
+                      final selection = controllerText.selection;
+                      final start = selection.start >= 0
+                          ? selection.start
+                          : text.length;
+                      final end = selection.end >= 0
+                          ? selection.end
+                          : text.length;
+
+                      final newText = text.replaceRange(
+                        start,
+                        end,
+                        emoji.emoji,
+                      );
+                      controllerText.text = newText;
+
+                      final cursorPos = start + emoji.emoji.length;
+                      controllerText.selection = TextSelection.collapsed(
+                        offset: cursorPos,
+                      );
+                    },
+                    config: Config(
+                      height: 260,
+                      emojiViewConfig: EmojiViewConfig(
+                        columns: 8,
+                        emojiSizeMax: 30,
+                        backgroundColor: const Color(0xFF0B1220),
+                      ),
+
+                      categoryViewConfig: CategoryViewConfig(
+                        backgroundColor: const Color(0xFF0B1220),
+                        iconColor: Color(0xFF94A3B8),
+                        iconColorSelected: Color(0xFF3B82F6),
+                        indicatorColor: Color(0xFF3B82F6),
+                      ),
+                      searchViewConfig: SearchViewConfig(
+                        backgroundColor: const Color(0xFF0B1220),
+                        hintText: "Search emoji...",
+                      ),
+                      bottomActionBarConfig: BottomActionBarConfig(
+                        backgroundColor: const Color(0xFF0B1220),
+                        buttonColor: const Color(0xFF3B82F6),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

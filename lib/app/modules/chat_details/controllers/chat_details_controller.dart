@@ -25,11 +25,18 @@ class ChatDetailsController extends GetxController {
   final isFeatchingMore = false.obs;
   final hasMore = true.obs;
 
+  final isEmojiVisible = false.obs; // لو GetX
+  final focusNode = FocusNode();
+
   @override
   void onInit() async {
     super.onInit();
     chatId = buildChatId(user.id, chat.otherUserId);
-
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        isEmojiVisible.value = false;
+      }
+    });
     //Panigation
     scrollController.addListener(() {
       if (!hasMore.value || isFeatchingMore.value) return;
@@ -164,6 +171,7 @@ class ChatDetailsController extends GetxController {
     if (text.isEmpty) return;
     final newMessageRef = db.child("chat-details/$chatId/messages").push();
     final newMessageTime = DateTime.now().millisecondsSinceEpoch;
+    isEmojiVisible.value = false;
 
     textController.clear();
     final tempId = newMessageRef.key ?? '';
@@ -255,6 +263,8 @@ class ChatDetailsController extends GetxController {
     scrollController.dispose();
     _messagesSubscription?.cancel();
     _childRemovedSub?.cancel();
+    focusNode.dispose();
+
     super.onClose();
   }
 }
