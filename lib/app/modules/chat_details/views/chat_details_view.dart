@@ -52,6 +52,9 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
                   );
                 }
                 final items = controller.messages;
+                final lastChatMessageTime = items.isNotEmpty
+                    ? items.last.messageTime
+                    : 0;
 
                 return ListView.builder(
                   reverse: true,
@@ -76,7 +79,10 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
                       });
                     }
 
-                    return _MessageBubble(item: items[items.length - 1 - i]);
+                    return _MessageBubble(
+                      item: items[items.length - 1 - i],
+                      lastChatMessageTime: lastChatMessageTime,
+                    );
                   },
                 );
               }),
@@ -224,7 +230,9 @@ class ChatDetailsView extends GetView<ChatDetailsController> {
 
 class _MessageBubble extends GetView<ChatDetailsController> {
   final ChatMessage item;
-  const _MessageBubble({required this.item});
+  final int lastChatMessageTime;
+
+  const _MessageBubble({required this.item, required this.lastChatMessageTime});
 
   @override
   Widget build(BuildContext context) {
@@ -235,82 +243,115 @@ class _MessageBubble extends GetView<ChatDetailsController> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: isMe
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
-          Flexible(
-            child: GestureDetector(
-              onLongPressStart: isMe
-                  ? (details) async {
-                      final tapPosition = details.globalPosition;
-                      final value = await showMenu<String>(
-                        context: context,
-                        position: RelativeRect.fromLTRB(
-                          tapPosition.dx,
-                          tapPosition.dy,
-                          tapPosition.dx,
-                          tapPosition.dy,
+          Row(
+            mainAxisAlignment: isMe
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            children: [
+              Flexible(
+                child: GestureDetector(
+                  onLongPressStart: isMe
+                      ? (details) async {
+                          final tapPosition = details.globalPosition;
+                          final value = await showMenu<String>(
+                            context: context,
+                            position: RelativeRect.fromLTRB(
+                              tapPosition.dx,
+                              tapPosition.dy,
+                              tapPosition.dx,
+                              tapPosition.dy,
+                            ),
+                            items: [
+                              const PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Text('Delete Message'),
+                              ),
+                            ],
+                          );
+                          if (value == 'delete') {
+                            controller.deleteMessageForEveryone(item);
+                          }
+                        }
+                      : null,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.78,
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                      decoration: BoxDecoration(
+                        color: bubbleColor,
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(18),
+                          topRight: const Radius.circular(18),
+                          bottomLeft: Radius.circular(isMe ? 18 : 6),
+                          bottomRight: Radius.circular(isMe ? 6 : 18),
                         ),
-                        items: [
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: Text('Delete Message'),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: isMe
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.message,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              height: 1.25,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            DateFormat('h:mm a').format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                item.messageTime,
+                              ),
+                            ),
+                            style: TextStyle(
+                              color: AppColors.hintText,
+                              fontSize: 11,
+                              height: 1,
+                            ),
                           ),
                         ],
-                      );
-                      if (value == 'delete') {
-                        controller.deleteMessageForEveryone(item);
-                      }
-                    }
-                  : null,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.78,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-                  decoration: BoxDecoration(
-                    color: bubbleColor,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(18),
-                      topRight: const Radius.circular(18),
-                      bottomLeft: Radius.circular(isMe ? 18 : 6),
-                      bottomRight: Radius.circular(isMe ? 6 : 18),
+                      ),
                     ),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: isMe
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.message,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          height: 1.25,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        DateFormat('h:mm a').format(
-                          DateTime.fromMillisecondsSinceEpoch(item.messageTime),
-                        ),
-                        style: TextStyle(
-                          color: AppColors.hintText,
-                          fontSize: 11,
-                          height: 1,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),
-            ),
+            ],
           ),
+          Obx(() {
+            final isLastChatMessage = item.messageTime == lastChatMessageTime;
+
+            final isSeen = controller.otherLastSeen.value >= item.messageTime;
+
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+
+              children: [
+                if (isLastChatMessage && isSeen) ...[
+                  Text(
+                    "Seen",
+                    style: TextStyle(
+                      color: AppColors.hintText,
+                      fontSize: 11,
+                      height: 1,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ],
+            );
+          }),
         ],
       ),
     );

@@ -10,6 +10,7 @@ class ChatDetailsController extends GetxController {
   final authService = Get.find<AuthServices>();
   final textController = TextEditingController();
   StreamSubscription<DatabaseEvent>? _messagesSubscription;
+  StreamSubscription<DatabaseEvent>? _metaSubscription;
   StreamSubscription<DatabaseEvent>? _childRemovedSub;
   late final user = authService.user.value!;
   late final String chatId;
@@ -27,6 +28,11 @@ class ChatDetailsController extends GetxController {
 
   final isEmojiVisible = false.obs; // لو GetX
   final focusNode = FocusNode();
+
+  RxInt otherLastSeen = 0.obs;
+  DatabaseReference get metaRef => db.child('chat-details/$chatId/meta');
+
+  DatabaseReference get lastSeenByRef => metaRef.child('lastSeenBy');
 
   @override
   void onInit() async {
@@ -47,7 +53,14 @@ class ChatDetailsController extends GetxController {
         fetchMoreMessages();
       }
     });
+
+    _listenToMeta();
+
     await _fetchMessages();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      markSeen();
+    });
 
     _listenToNewMessages();
   }
@@ -157,6 +170,9 @@ class ChatDetailsController extends GetxController {
 
         if (exists) return;
         messages.add(newMessage);
+        if (newMessage.senderId == chat.otherUserId) {
+          markSeen();
+        }
       },
     );
     _childRemovedSub = baseQuery.onChildRemoved.listen((event) {
@@ -170,6 +186,7 @@ class ChatDetailsController extends GetxController {
     final text = textController.text.trim();
     if (text.isEmpty) return;
     final newMessageRef = db.child("chat-details/$chatId/messages").push();
+
     final newMessageTime = DateTime.now().millisecondsSinceEpoch;
     isEmojiVisible.value = false;
 
@@ -257,6 +274,37 @@ class ChatDetailsController extends GetxController {
     await otherChatRef.update(updateData);
   }
 
+  void _listenToMeta() {
+    _metaSubscription = metaRef.onValue.listen((event) {
+      final data = event.snapshot.value;
+      if (data == null) {
+        otherLastSeen.value = 0;
+        return;
+      }
+      final map = Map<dynamic, dynamic>.from(data as Map);
+      final seenBy = map['lastSeenBy'] as Map?;
+      final seen = seenBy == null ? 0 : (seenBy[chat.otherUserId] ?? 0) as num;
+      otherLastSeen.value = seen.toInt();
+    });
+  }
+
+  Future<void> markSeen() async {
+    final lastOtherMessageTime = messages
+        .where((m) => m.senderId == chat.otherUserId)
+        .fold<int>(0, (max, m) => m.messageTime > max ? m.messageTime : max);
+
+    if (lastOtherMessageTime == 0) return;
+
+    final myUid = user.id;
+
+    final snap = await lastSeenByRef.child(myUid).get();
+    final current = snap.value == null ? 0 : (snap.value as num).toInt();
+
+    if (lastOtherMessageTime <= current) return;
+
+    await lastSeenByRef.child(myUid).set(lastOtherMessageTime);
+  }
+
   @override
   void onClose() {
     textController.dispose();
@@ -264,7 +312,7 @@ class ChatDetailsController extends GetxController {
     _messagesSubscription?.cancel();
     _childRemovedSub?.cancel();
     focusNode.dispose();
-
+    _metaSubscription?.cancel();
     super.onClose();
   }
 }
