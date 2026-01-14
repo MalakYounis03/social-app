@@ -30,10 +30,39 @@ class MainView extends GetView<MainController> {
             ),
             NavigationDestination(icon: Icon(Icons.search), label: "Search"),
 
-            NavigationDestination(
-              icon: Icon(Icons.chat_bubble_outline),
-              label: "Chats",
-            ),
+            Obx(() {
+              final total = controller.chatsController.unread.totalUnread.value;
+
+              return Stack(
+                clipBehavior: Clip.none,
+
+                children: [
+                  NavigationDestination(
+                    icon: Icon(Icons.chat_bubble_outline),
+                    label: "Chats",
+                  ),
+                  if (total > 0)
+                    Positioned(
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          total.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            }),
             NavigationDestination(
               icon: Icon(Icons.person_outline),
               label: "Profile",

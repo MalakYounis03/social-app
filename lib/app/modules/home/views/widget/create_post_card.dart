@@ -12,6 +12,9 @@ class CreatePostCard extends GetView<HomeController> {
     final authService = Get.find<AuthServices>();
 
     final savedUser = authService.user.value;
+    if (savedUser == null) {
+      return const SizedBox.shrink(); // أو Skeleton / Placeholder
+    }
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -24,7 +27,7 @@ class CreatePostCard extends GetView<HomeController> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(backgroundImage: NetworkImage(savedUser!.imageUrl)),
+              CircleAvatar(backgroundImage: NetworkImage(savedUser.imageUrl)),
               const SizedBox(width: 12),
               Expanded(
                 child: Form(

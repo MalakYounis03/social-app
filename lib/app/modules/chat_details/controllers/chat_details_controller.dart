@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:social_app/app/modules/chat_details/model/chat_details_model.dart';
+import 'package:social_app/app/modules/chats/controllers/chats_controller.dart';
 import 'package:social_app/app/services/auth_services.dart';
 
 class ChatDetailsController extends GetxController {
@@ -26,43 +27,48 @@ class ChatDetailsController extends GetxController {
   final isFeatchingMore = false.obs;
   final hasMore = true.obs;
 
-  final isEmojiVisible = false.obs; // لو GetX
+  final isEmojiVisible = false.obs;
   final focusNode = FocusNode();
 
   RxInt otherLastSeen = 0.obs;
   DatabaseReference get metaRef => db.child('chat-details/$chatId/meta');
 
   DatabaseReference get lastSeenByRef => metaRef.child('lastSeenBy');
-
+  final chatsController = Get.find<ChatsController>();
   @override
   void onInit() async {
     super.onInit();
+
     chatId = buildChatId(user.id, chat.otherUserId);
-    focusNode.addListener(() {
-      if (focusNode.hasFocus) {
-        isEmojiVisible.value = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatsController.setOpenChat(chat.otherUserId);
+
+      if (!chat.isNew) {
+        chatsController.markChatAsRead(chat.otherUserId);
       }
     });
-    //Panigation
+
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) isEmojiVisible.value = false;
+    });
+
     scrollController.addListener(() {
       if (!hasMore.value || isFeatchingMore.value) return;
       if (!scrollController.hasClients) return;
       final pos = scrollController.position;
-
-      if (pos.pixels >= pos.maxScrollExtent - 80) {
-        fetchMoreMessages();
-      }
+      if (pos.pixels >= pos.maxScrollExtent - 80) fetchMoreMessages();
     });
 
-    _listenToMeta();
+    _listenToMeta // لو بدك خليها
+    ();
 
+    // ✅ ابدأ listener أول
+    _listenToNewMessages();
+
+    // ✅ بعدين fetch (بس ما تخليها تعمل flicker بالـ UI)
     await _fetchMessages();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      markSeen();
-    });
-
-    _listenToNewMessages();
+    WidgetsBinding.instance.addPostFrameCallback((_) => markSeen());
   }
 
   Future<void> _fetchMessages() async {
@@ -213,14 +219,26 @@ class ChatDetailsController extends GetxController {
       "lastMessage": text,
       "lastMessageTime": newMessageTime,
       "lastMessageAuthor": user.id,
+      "lastReadTime": newMessageTime,
+      "unreadCount": 0,
     });
+    final otherId = chat.otherUserId;
+    final myId = user.id;
 
-    await db.child("list-of-chats/${chat.otherUserId}/${user.id}").update({
+    // تحديث بيانات الشات عند المستلم (بدون unreadCount هون)
+    await db.child("list-of-chats/$otherId/$myId").update({
       "name": user.name,
       "imageUrl": user.imageUrl,
       "lastMessage": text,
       "lastMessageTime": newMessageTime,
-      "lastMessageAuthor": user.id,
+      "lastMessageAuthor": myId,
+    });
+
+    // ✅ زِد unreadCount عند المستلم بشكل آمن
+    final unreadRef = db.child("list-of-chats/$otherId/$myId/unreadCount");
+    await unreadRef.runTransaction((value) {
+      final current = (value as num?)?.toInt() ?? 0;
+      return Transaction.success(current + 1);
     });
   }
 
@@ -307,6 +325,9 @@ class ChatDetailsController extends GetxController {
 
   @override
   void onClose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chatsController.setOpenChat(null);
+    });
     textController.dispose();
     scrollController.dispose();
     _messagesSubscription?.cancel();

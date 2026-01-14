@@ -1,15 +1,17 @@
 import 'package:social_app/app/data/user_model.dart';
-import 'package:social_app/app/modules/chat_details/model/chat_model.dart';
+import 'package:social_app/app/modules/chats/model/chat_model.dart';
 
 class ChatDetails {
   String otherUserId;
   String otherUserName;
   String otherUserImageUrl;
+  final bool isNew;
 
   ChatDetails({
     required this.otherUserId,
     required this.otherUserName,
     required this.otherUserImageUrl,
+    required this.isNew,
   });
 
   factory ChatDetails.newChat(UserModel user) {
@@ -17,6 +19,7 @@ class ChatDetails {
       otherUserId: user.id,
       otherUserName: user.name,
       otherUserImageUrl: user.imageUrl,
+      isNew: true,
     );
   }
 
@@ -25,6 +28,7 @@ class ChatDetails {
       otherUserId: chat.otherUserId,
       otherUserName: chat.name,
       otherUserImageUrl: chat.imageUrl,
+      isNew: false,
     );
   }
 }
